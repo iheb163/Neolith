@@ -1,4 +1,3 @@
-// src/LoginPage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
@@ -10,17 +9,23 @@ import {
   Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { login as saveToken } from './auth';
+import { login as saveToken, getToken, isTokenExpired } from './auth';
 
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  // State pour email, password et message d'erreur / succès
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [feedback, setFeedback] = useState('');
 
-  // Fonction de soumission du formulaire
+  // Si un token valide existe déjà → on va direct sur /main
+  useEffect(() => {
+    const token = getToken();
+    if (token && !isTokenExpired()) {
+      navigate('/main', { replace: true });
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -28,9 +33,14 @@ export default function LoginPage() {
         'http://localhost:3000/auth/login',
         { email, password }
       );
-      // Sauvegarde du token JWT et redirection
+
+      // Sauvegarde du token JWT
       saveToken(data.access_token);
-      setFeedback('Connexion réussie !'); 
+
+      // Ajoute le token dans Axios pour les futures requêtes
+      axios.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
+
+      setFeedback('Connexion réussie !');
       navigate('/main');
     } catch (err) {
       setFeedback(
@@ -41,7 +51,7 @@ export default function LoginPage() {
     }
   };
 
-  // Affiche le feedback quelques secondes
+  // Efface le message après 4 sec
   useEffect(() => {
     if (feedback) {
       const timer = setTimeout(() => setFeedback(''), 4000);
@@ -53,10 +63,10 @@ export default function LoginPage() {
     <Box
       sx={{
         minHeight: '100vh',
-        backgroundColor: '#d0f0c0',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: 'background.default',
       }}
     >
       <Container maxWidth="sm">
@@ -65,15 +75,14 @@ export default function LoginPage() {
         </Typography>
 
         {feedback && (
-          <Alert severity={feedback.startsWith('Échec') ? 'error' : 'success'} 
-                 sx={{ mb: 2 }}>
+          <Alert severity={feedback.startsWith('Échec') ? 'error' : 'success'} sx={{ mb: 2 }}>
             {feedback}
           </Alert>
         )}
 
         <Box
           component="form"
-          onSubmit={handleLogin}           // <-- soumission
+          onSubmit={handleLogin}
           sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -85,15 +94,8 @@ export default function LoginPage() {
             label="Email"
             variant="outlined"
             fullWidth
-            value={email}                   // <-- bind value
-            onChange={e => setEmail(e.target.value)} // <-- onChange
-            InputProps={{
-              sx: {
-                backgroundColor: '#A9A9A9',
-                boxShadow: '3px 3px 8px rgba(0,0,0,0.2)',
-                borderRadius: 2,
-              },
-            }}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
 
           <TextField
@@ -101,31 +103,14 @@ export default function LoginPage() {
             type="password"
             variant="outlined"
             fullWidth
-            value={password}                // <-- bind value
-            onChange={e => setPassword(e.target.value)} // <-- onChange
-            InputProps={{
-              sx: {
-                backgroundColor: '#A9A9A9',
-                boxShadow: '3px 3px 8px rgba(0,0,0,0.2)',
-                borderRadius: 2,
-              },
-            }}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
 
           <Button
-            type="submit"                   // <-- bouton submit
+            type="submit"
             variant="contained"
             fullWidth
-            sx={{
-              backgroundColor: '#87CEEB',
-              color: '#000',
-              boxShadow: '4px 4px 10px rgba(0,0,0,0.3)',
-              borderRadius: 2,
-              py: 1.2,
-              '&:hover': {
-                backgroundColor: '#6dbfd6',
-              },
-            }}
           >
             Se connecter
           </Button>
@@ -134,16 +119,6 @@ export default function LoginPage() {
             variant="outlined"
             fullWidth
             onClick={() => navigate('/register')}
-            sx={{
-              borderColor: '#87CEEB',
-              color: '#000',
-              boxShadow: '2px 2px 5px rgba(0,0,0,0.2)',
-              borderRadius: 2,
-              py: 1.2,
-              '&:hover': {
-                backgroundColor: '#e0f0ff',
-              },
-            }}
           >
             S'inscrire
           </Button>

@@ -17,5 +17,5 @@ export class CreateUserDto {
   tel?: string;
 
   @IsOptional()
-  date_naissance?: string;
+  date_naissance?: string; // attend un format 'YYYY-MM-DD'
 }

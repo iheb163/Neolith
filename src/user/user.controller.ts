@@ -1,4 +1,3 @@
-// src/user/user.controller.ts
 import {
   Controller, Get, Post, Body, Patch, Param, Delete, UseGuards,
 } from '@nestjs/common';
@@ -8,31 +7,39 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('user')
-@UseGuards(JwtAuthGuard)  // Protéger toutes les routes par défaut
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  // Création publique, sans guard
   @Post()
-  @UseGuards()  // Aucune garde ici → inscription ouverte à tous
   create(@Body() createUserDto: CreateUserDto) {
+    //console.log('Payload reçu /user :', createUserDto);
     return this.userService.create(createUserDto);
   }
 
+  // Les routes suivantes nécessitent un JWT
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.userService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.userService.update(+id, updateUserDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);

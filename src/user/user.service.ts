@@ -16,9 +16,13 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    try {
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = this.userRepository.create({ ...createUserDto, password: hashedPassword });
-    return this.userRepository.save(user);
+     await this.userRepository.save(user);
+    } catch (error) {
+        throw new Error('erreur ya iheb')
+    }
   }
 
   async findAll(): Promise<User[]> {

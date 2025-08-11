@@ -1,13 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logout } from './auth';
+import { clearToken } from './auth'; // <-- on importe clearToken
 
 function MainPage() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    clearToken(); // <-- supprime complètement le token
+    navigate('/'); // <-- redirection vers la page de connexion
   };
 
   return (

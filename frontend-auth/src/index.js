@@ -1,24 +1,20 @@
+// src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
-
-const theme = createTheme({
-  palette: {
-    primary: { main: '#1B4332' },
-    secondary: { main: '#BBDEFB' },
-    background: { default: '#f5f5f5' },
-  },
-});
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './Theme'; // <-- importe le thème centralisé
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <BrowserRouter>
+  <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </ThemeProvider>
-  </BrowserRouter>
+  </React.StrictMode>
 );
