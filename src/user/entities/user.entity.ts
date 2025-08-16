@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Localite } from '../../localite/localite.entity'; // adapte le chemin
 
 @Entity()
 export class User {
@@ -17,11 +18,13 @@ export class User {
   @Column()
   password: string;
 
-  // nouveau : téléphone (nullable si tu veux pas l'obliger)
   @Column({ nullable: true })
   tel?: string;
 
-  // nouveau : date de naissance (type date)
   @Column({ type: 'date', nullable: true })
   date_naissance?: string;
+
+  // relation : un utilisateur peut avoir plusieurs localités
+  @OneToMany(() => Localite, (localite) => localite.user)
+  localites?: Localite[];
 }

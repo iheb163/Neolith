@@ -1,21 +1,26 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { clearToken } from './auth'; // <-- on importe clearToken
+import Container from '@mui/material/Container';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Header from './components/Header';
+import Footer from './components/Footer';
 
-function MainPage() {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    clearToken(); // <-- supprime complètement le token
-    navigate('/'); // <-- redirection vers la page de connexion
-  };
-
+export default function MainPage() {
   return (
-    <div>
-      <h2>Bienvenue !</h2>
-      <button onClick={handleLogout}>Se déconnecter</button>
-    </div>
+    <>
+      <Header />
+      <Container maxWidth="lg">
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Bienvenue sur la page principale
+          </Typography>
+
+          <Typography variant="body1">
+            Ici tu peux afficher le contenu principal de ton application.
+          </Typography>
+        </Box>
+      </Container>
+      <Footer />
+    </>
   );
 }
-
-export default MainPage;
