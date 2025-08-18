@@ -22,6 +22,9 @@ export default function LoginPage() {
   useEffect(() => {
     const token = getToken();
     if (token && !isTokenExpired()) {
+      // s'assurer aussi que axios a bien le header (au refresh)
+      axios.defaults.baseURL = axios.defaults.baseURL || 'http://localhost:3000';
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       navigate('/main', { replace: true });
     }
   }, [navigate]);
@@ -29,25 +32,36 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post(
-        'http://localhost:3000/auth/login',
-        { email, password }
-      );
+      // on utilise baseURL d'axios (défini dans App.js)
+      const { data } = await axios.post('/auth/login', { email, password });
 
-      // Sauvegarde du token JWT
+      if (!data || !data.access_token) {
+        // Réponse inattendue du serveur
+        console.error('LOGIN: réponse inattendue', data);
+        setFeedback('Réponse inattendue du serveur');
+        return;
+      }
+
+      // Sauvegarde du token JWT dans le localStorage (auth.js)
       saveToken(data.access_token);
 
-      // Ajoute le token dans Axios pour les futures requêtes
+      // Ajoute le token dans Axios pour les futures requêtes (immédiat)
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
 
       setFeedback('Connexion réussie !');
-      navigate('/main');
+      // petit délai pour afficher le message, puis redirection
+      setTimeout(() => navigate('/main'), 400);
     } catch (err) {
-      setFeedback(
-        err.response?.data?.message
-          ? `Échec : ${err.response.data.message}`
-          : 'Erreur de connexion'
-      );
+      console.error('LOGIN ERROR full:', err);
+      // affiche message serveur si présent (utile pour debug)
+      const server = err.response ? err.response.data : null;
+      if (server?.message) {
+        setFeedback(`Échec : ${server.message}`);
+      } else if (server) {
+        setFeedback(`Échec : ${JSON.stringify(server)}`);
+      } else {
+        setFeedback('Erreur de connexion');
+      }
     }
   };
 

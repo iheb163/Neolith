@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+// src/localite/localite.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Localite } from './localite.entity';
@@ -13,16 +14,19 @@ export class LocaliteService {
 
   async create(dto: CreateLocaliteDto, userId: number) {
     const entity = this.repo.create({ ...dto, userId });
+    // debug : log avant sauvegarde
+    console.log('[localite.service] create entity =', entity);
     return this.repo.save(entity);
   }
 
   async findAllForUser(userId: number) {
+    if (!userId) return [];
     return this.repo.find({ where: { userId } });
   }
 
   async findOneForUser(id: number, userId: number) {
     const e = await this.repo.findOne({ where: { id, userId } });
-    if (!e) throw new NotFoundException('Localité non trouvée');
+    if (!e) throw new NotFoundException('Localité non trouvée ou non autorisée');
     return e;
   }
 

@@ -5,6 +5,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getToken, isTokenExpired, clearToken } from './auth';
 
 const siteOptions = [
   { value: 'agence', label: 'Agence' },
@@ -35,7 +36,6 @@ export default function LocaliteCreate() {
     if (!form.site) return 'Choisir le type de site.';
     if (!form.ville) return 'La ville est requise.';
     if (!form.adresse) return 'L\'adresse est requise.';
-    // code_postal, superficie, lat/lon facultatifs
     return null;
   };
 
@@ -56,10 +56,21 @@ export default function LocaliteCreate() {
       longitude: form.longitude ? parseFloat(form.longitude) : undefined,
     };
 
+    // --- SÉCURITÉ : s'assurer que le token est présent et appliqué ---
+    const token = getToken();
+    if (!token || isTokenExpired()) {
+      // pas de token valide → rediriger vers login
+      clearToken();
+      navigate('/', { replace: true });
+      return;
+    }
+    // applique le header (immédiat)
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
     setLoading(true);
     try {
-      await axios.post('http://localhost:3000/localites', payload);
-      // redirection vers la liste après création
+      // utilise baseURL d'axios (défini dans App.js)
+      await axios.post('/localites', payload);
       navigate('/localites');
     } catch (err) {
       console.error('Erreur création localité', err);
@@ -92,62 +103,23 @@ export default function LocaliteCreate() {
             ))}
           </TextField>
 
-          <TextField
-            label="Superficie (m²)"
-            name="superficie"
-            value={form.superficie}
-            onChange={handleChange}
-            type="number"
-            inputProps={{ step: '0.01' }}
-            fullWidth
-          />
+          <TextField label="Superficie (m²)" name="superficie" value={form.superficie}
+            onChange={handleChange} type="number" inputProps={{ step: '0.01' }} fullWidth />
 
-          <TextField
-            label="Ville"
-            name="ville"
-            value={form.ville}
-            onChange={handleChange}
-            fullWidth
-            required
-          />
+          <TextField label="Ville" name="ville" value={form.ville}
+            onChange={handleChange} fullWidth required />
 
-          <TextField
-            label="Code postal"
-            name="code_postal"
-            value={form.code_postal}
-            onChange={handleChange}
-            type="number"
-            fullWidth
-          />
+          <TextField label="Code postal" name="code_postal" value={form.code_postal}
+            onChange={handleChange} type="number" fullWidth />
 
-          <TextField
-            label="Adresse"
-            name="adresse"
-            value={form.adresse}
-            onChange={handleChange}
-            fullWidth
-            required
-          />
+          <TextField label="Adresse" name="adresse" value={form.adresse}
+            onChange={handleChange} fullWidth required />
 
-          <TextField
-            label="Latitude"
-            name="latitude"
-            value={form.latitude}
-            onChange={handleChange}
-            type="number"
-            inputProps={{ step: '0.000001' }}
-            fullWidth
-          />
+          <TextField label="Latitude" name="latitude" value={form.latitude}
+            onChange={handleChange} type="number" inputProps={{ step: '0.000001' }} fullWidth />
 
-          <TextField
-            label="Longitude"
-            name="longitude"
-            value={form.longitude}
-            onChange={handleChange}
-            type="number"
-            inputProps={{ step: '0.000001' }}
-            fullWidth
-          />
+          <TextField label="Longitude" name="longitude" value={form.longitude}
+            onChange={handleChange} type="number" inputProps={{ step: '0.000001' }} fullWidth />
 
           <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
             <Button type="submit" variant="contained" disabled={loading}>

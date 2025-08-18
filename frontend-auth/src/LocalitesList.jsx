@@ -8,6 +8,7 @@ import {
 import Header from './components/Header';
 import Footer from './components/Footer';
 import { useNavigate } from 'react-router-dom';
+import { getToken, isTokenExpired, clearToken } from './auth';
 
 export default function LocalitesList() {
   const [localites, setLocalites] = useState([]);
@@ -17,20 +18,50 @@ export default function LocalitesList() {
 
   useEffect(() => {
     let mounted = true;
+
     async function fetchLocalites() {
+      setError('');
+      setLoading(true);
+
       try {
-        const res = await axios.get('http://localhost:3000/localites');
+        // fallback baseURL si non défini dans App.js
+        axios.defaults.baseURL = axios.defaults.baseURL || 'http://localhost:3000';
+
+        // vérification token
+        const token = getToken();
+        if (!token || isTokenExpired()) {
+          clearToken();
+          navigate('/', { replace: true });
+          return;
+        }
+
+        // applique header (immédiat)
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        const res = await axios.get('/localites'); // utilise baseURL
         if (mounted) setLocalites(res.data || []);
       } catch (err) {
         console.error('Erreur fetch localites', err);
+
+        // si 401 => token invalide/expires ou problème d'auth => purge et redirige
+        if (err.response?.status === 401) {
+          clearToken();
+          navigate('/', { replace: true });
+          return;
+        }
+
         if (mounted) setError('Impossible de récupérer les localités.');
       } finally {
         if (mounted) setLoading(false);
       }
     }
+
     fetchLocalites();
-    return () => { mounted = false; };
-  }, []);
+
+    return () => {
+      mounted = false;
+    };
+  }, [navigate]);
 
   return (
     <>
