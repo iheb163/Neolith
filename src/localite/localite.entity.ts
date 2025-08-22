@@ -1,43 +1,53 @@
+// src/localite/localite.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { User } from '../user/entities/user.entity'; // chemin correct vers ton entity User
-
-export enum SiteType {
-  AGENCE = 'agence',
-  IMMEUBLE = 'immeuble',
-  SIEGE = 'siege',
-}
+import { User } from '../user/entities/user.entity';
+import { OneToMany } from 'typeorm';
+import { Consommation } from '../consommation/consommation.entity';
 
 @Entity()
 export class Localite {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'enum', enum: SiteType })
-  site: SiteType;
+  @Column({ name: 'type', type: 'varchar', length: 50 })
+  type: string;
 
   @Column({ type: 'double precision', nullable: true })
   superficie?: number;
 
-  @Column()
-  ville: string;
+  @Column({ name: 'city', type: 'varchar', length: 255 })
+  city: string;
 
   @Column({ type: 'int', nullable: true })
-  code_postal?: number;
+  code?: number;
 
-  @Column()
-  adresse: string;
+  @Column({ type: 'int', nullable: true })
+  nombre_employes?: number;
 
-  @Column({ type: 'double precision', nullable: true })
-  latitude?: number;
+  @Column({ type: 'int', nullable: true })
+  ref_steg?: number;
 
-  @Column({ type: 'double precision', nullable: true })
-  longitude?: number;
+  // maps reste optionnel (nullable)
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  maps?: string;
 
-  // ---------- relation vers User ----------
+  @Column({ type: 'varchar', nullable: true })
+  adresse?: string;
+
+  
+  @Column({ type: 'varchar', length: 255, nullable: false })
+  region: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
+  local: string;
+
   @Column({ type: 'int', nullable: true })
   userId?: number;
 
   @ManyToOne(() => User, (user) => user.localites, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user?: User;
+
+  @OneToMany(() => Consommation, c => c.localite)
+  consommations: Consommation[];
 }

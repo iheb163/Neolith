@@ -1,37 +1,49 @@
 // src/localite/dto/create-localite.dto.ts
-import { IsEnum, IsNotEmpty, IsOptional, IsNumber, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
-import { SiteType } from '../localite.entity';
+import { IsNotEmpty, IsIn, IsOptional, IsNumber, IsInt, Min, IsString } from 'class-validator';
 
 export class CreateLocaliteDto {
-  @IsEnum(SiteType)
-  site: SiteType;
+  @IsNotEmpty()
+  @IsIn(['agence', 'immeuble', 'siege', 'appartement'])
+  type: string;
 
   @IsOptional()
-  @Type(() => Number)
   @IsNumber()
   superficie?: number;
 
   @IsNotEmpty()
   @IsString()
-  ville: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  code_postal?: number;
+  city: string;
 
   @IsNotEmpty()
   @IsString()
   adresse: string;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  latitude?: number;
+  @IsInt()
+  @Min(0)
+  code?: number;
 
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  longitude?: number;
+  @IsInt()
+  @Min(0)
+  nombre_employes?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  ref_steg?: number;
+
+  // maps est optionnel
+  @IsOptional()
+  @IsString()
+  maps?: string;
+
+  // region et local obligatoires (selon ta demande précédente)
+  @IsNotEmpty()
+  @IsString()
+  region: string;
+
+  @IsNotEmpty()
+  @IsString()
+  local: string;
 }

@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { LocaliteModule } from './localite/localite.module'; // <-- Ajout
+import { MesureModule } from './mesure/mesure.module';
+import { ConsommationModule } from './consommation/consommation.module';
 
 @Module({
   imports: [
@@ -21,7 +23,9 @@ import { LocaliteModule } from './localite/localite.module'; // <-- Ajout
     }),
     UserModule,
     AuthModule,
-    LocaliteModule, // <-- Ajout
+    LocaliteModule,
+    MesureModule,
+    ConsommationModule, // <-- Ajout
   ],
   controllers: [AppController],
   providers: [AppService],

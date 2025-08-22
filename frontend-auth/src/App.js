@@ -7,6 +7,9 @@ import MainPage from './MainPage';
 import RegisterForm from './RegisterForm';
 import LocalitesList from './LocalitesList';
 import LocaliteCreate from './LocaliteCreate';
+import MesuresList from './MesuresList';
+import MesureCreate from './MesureCreate';
+import ConsommationCreate from './Consommation'; // <-- import ajouté
 import PrivateRoute from './PrivateRoute';
 import { getToken, isTokenExpired, clearToken } from './auth';
 
@@ -86,6 +89,34 @@ export default function App() {
         element={
           <PrivateRoute>
             <LocaliteCreate />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Mesures */}
+      <Route
+        path="/mesures"
+        element={
+          <PrivateRoute>
+            <MesuresList />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/mesures/create"
+        element={
+          <PrivateRoute>
+            <MesureCreate />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Consommations - création */}
+      <Route
+        path="/consommations/create"
+        element={
+          <PrivateRoute>
+            <ConsommationCreate />
           </PrivateRoute>
         }
       />

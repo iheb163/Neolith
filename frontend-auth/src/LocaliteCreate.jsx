@@ -7,22 +7,26 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { getToken, isTokenExpired, clearToken } from './auth';
 
-const siteOptions = [
+const typeOptions = [
   { value: 'agence', label: 'Agence' },
   { value: 'immeuble', label: 'Immeuble' },
   { value: 'siege', label: 'Siège' },
+  { value: 'appartement', label: 'Appartement' },
 ];
 
 export default function LocaliteCreate() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    site: 'agence',
+    type: 'agence',
     superficie: '',
-    ville: '',
-    code_postal: '',
+    city: '',
     adresse: '',
-    latitude: '',
-    longitude: '',
+    code: '',
+    nombre_employes: '',
+    ref_steg: '',
+    maps: '',
+    region: '',
+    local: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,9 +37,12 @@ export default function LocaliteCreate() {
   };
 
   const validate = () => {
-    if (!form.site) return 'Choisir le type de site.';
-    if (!form.ville) return 'La ville est requise.';
+    if (!form.type) return 'Choisir le type.';
+    if (!form.city) return 'La city est requise.';
     if (!form.adresse) return 'L\'adresse est requise.';
+    if (!form.code) return 'Le code est requis et doit être un nombre.';
+    if (!form.region) return 'La région est requise.';
+    if (!form.local) return 'Le local est requis.';
     return null;
   };
 
@@ -45,31 +52,30 @@ export default function LocaliteCreate() {
     const v = validate();
     if (v) { setError(v); return; }
 
-    // Préparer payload et convertir les nombres
     const payload = {
-      site: form.site,
+      type: form.type,
       superficie: form.superficie ? parseFloat(form.superficie) : undefined,
-      ville: form.ville,
-      code_postal: form.code_postal ? parseInt(form.code_postal, 10) : undefined,
+      city: form.city,
       adresse: form.adresse,
-      latitude: form.latitude ? parseFloat(form.latitude) : undefined,
-      longitude: form.longitude ? parseFloat(form.longitude) : undefined,
+      code: parseInt(form.code, 10),
+      nombre_employes: form.nombre_employes ? parseInt(form.nombre_employes, 10) : undefined,
+      ref_steg: form.ref_steg ? parseInt(form.ref_steg, 10) : undefined,
+      maps: form.maps || undefined,
+      region: form.region,
+      local: form.local,
     };
 
-    // --- SÉCURITÉ : s'assurer que le token est présent et appliqué ---
     const token = getToken();
     if (!token || isTokenExpired()) {
-      // pas de token valide → rediriger vers login
       clearToken();
       navigate('/', { replace: true });
       return;
     }
-    // applique le header (immédiat)
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    axios.defaults.baseURL = axios.defaults.baseURL || 'http://localhost:3000';
 
     setLoading(true);
     try {
-      // utilise baseURL d'axios (défini dans App.js)
       await axios.post('/localites', payload);
       navigate('/localites');
     } catch (err) {
@@ -90,36 +96,36 @@ export default function LocaliteCreate() {
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2 }}>
-          <TextField
-            select
-            label="Site"
-            name="site"
-            value={form.site}
-            onChange={handleChange}
-            fullWidth
-          >
-            {siteOptions.map((o) => (
-              <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
-            ))}
+          <TextField select label="Type" name="type" value={form.type} onChange={handleChange} fullWidth>
+            {typeOptions.map((o) => (<MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>))}
           </TextField>
 
           <TextField label="Superficie (m²)" name="superficie" value={form.superficie}
             onChange={handleChange} type="number" inputProps={{ step: '0.01' }} fullWidth />
 
-          <TextField label="Ville" name="ville" value={form.ville}
+          <TextField label="City" name="city" value={form.city}
             onChange={handleChange} fullWidth required />
-
-          <TextField label="Code postal" name="code_postal" value={form.code_postal}
-            onChange={handleChange} type="number" fullWidth />
 
           <TextField label="Adresse" name="adresse" value={form.adresse}
             onChange={handleChange} fullWidth required />
 
-          <TextField label="Latitude" name="latitude" value={form.latitude}
-            onChange={handleChange} type="number" inputProps={{ step: '0.000001' }} fullWidth />
+          <TextField label="Code (unique)" name="code" value={form.code}
+            onChange={handleChange} type="number" fullWidth required />
 
-          <TextField label="Longitude" name="longitude" value={form.longitude}
-            onChange={handleChange} type="number" inputProps={{ step: '0.000001' }} fullWidth />
+          <TextField label="Nombre d'employés" name="nombre_employes" value={form.nombre_employes}
+            onChange={handleChange} type="number" fullWidth />
+
+          <TextField label="Ref STEG" name="ref_steg" value={form.ref_steg}
+            onChange={handleChange} type="number" fullWidth />
+
+          <TextField label="Maps (optionnel)" name="maps" value={form.maps}
+            onChange={handleChange} fullWidth />
+
+          <TextField label="Region" name="region" value={form.region}
+            onChange={handleChange} fullWidth required />
+
+          <TextField label="Local" name="local" value={form.local}
+            onChange={handleChange} fullWidth required />
 
           <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
             <Button type="submit" variant="contained" disabled={loading}>

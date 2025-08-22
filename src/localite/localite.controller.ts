@@ -1,7 +1,8 @@
 // src/localite/localite.controller.ts
-import { Controller, Post, Body, Get, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, UseGuards, Request, Patch } from '@nestjs/common';
 import { LocaliteService } from './localite.service';
 import { CreateLocaliteDto } from './dto/create-localite.dto';
+import { UpdateLocaliteDto } from './dto/update-localite.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('localites')
@@ -10,14 +11,8 @@ export class LocaliteController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Request() req, @Body() dto: CreateLocaliteDto) {
-    // Récupère l'id utilisateur depuis plusieurs champs possibles (sub, userId, id)
+  create(@Request() req, @Body() dto: CreateLocaliteDto) {
     const userId = req.user?.sub ?? req.user?.userId ?? req.user?.id;
-    console.log('[localites][POST] req.user =', req.user, '=> userId =', userId);
-    if (!userId) {
-      // sécurité : si pas d'userId (improbable si guard fonctionne), on peut rejeter
-      throw new Error('Utilisateur non identifié (userId manquant)');
-    }
     return this.localiteService.create(dto, userId);
   }
 
@@ -25,15 +20,14 @@ export class LocaliteController {
   @Get()
   findAllForUser(@Request() req) {
     const userId = req.user?.sub ?? req.user?.userId ?? req.user?.id;
-    console.log('[localites][GET] req.user =', req.user, '=> userId =', userId);
     return this.localiteService.findAllForUser(userId);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  findOne(@Request() req, @Param('id') id: string) {
+  @Patch(':id')
+  update(@Request() req, @Param('id') id: string, @Body() dto: UpdateLocaliteDto) {
     const userId = req.user?.sub ?? req.user?.userId ?? req.user?.id;
-    return this.localiteService.findOneForUser(+id, userId);
+    return this.localiteService.updateForUser(+id, dto, userId);
   }
 
   @UseGuards(JwtAuthGuard)
